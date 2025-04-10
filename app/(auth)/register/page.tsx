@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -10,34 +9,88 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/context/auth-context"
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const { toast } = useToast()
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "developer",
+  })
   const [isLoading, setIsLoading] = useState(false)
-  const [userType, setUserType] = useState("developer")
+  const { toast } = useToast()
+  const router = useRouter()
+  const { register } = useAuth()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleRoleChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      role: value,
+    }))
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsLoading(true)
 
-    // Simuler une inscription réussie
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      console.log(formData)
+      // Validation basique
+      if (!formData.email || !formData.password || !formData.name) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Veuillez remplir tous les champs obligatoires",
+        })
+        return
+      }
+
+      const response = await register(formData)
+
+      if (response.success) {
+        toast({
+          title: "Inscription réussie",
+          description: "Votre compte a été créé avec succès.",
+        })
+        router.push("/dashboard")
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'inscription",
+          description: response.error?.userMessage || "Une erreur s'est produite lors de l'inscription",
+        })
+      }
+    } catch (error: any) {
+      console.error("Erreur lors de l'inscription:", error)
       toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès.",
+        variant: "destructive",
+        title: "Erreur d'inscription",
+        description: "Une erreur s'est produite lors de l'inscription",
       })
-      router.push("/dashboard")
-    }, 1000)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Créer un compte</h1>
-          <p className="text-sm text-muted-foreground">Inscrivez-vous pour accéder à la plateforme</p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Créer un compte
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Inscrivez-vous pour accéder à la plateforme
+          </p>
         </div>
         <div className="grid gap-6">
           <form onSubmit={onSubmit}>
@@ -46,9 +99,12 @@ export default function RegisterPage() {
                 <Label htmlFor="name">Nom complet</Label>
                 <Input
                   id="name"
+                  name="name"
                   placeholder="John Doe"
                   autoCapitalize="none"
                   autoCorrect="off"
+                  value={formData.name}
+                  onChange={handleChange}
                   disabled={isLoading}
                   required
                 />
@@ -57,10 +113,13 @@ export default function RegisterPage() {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  name="email"
                   placeholder="nom@exemple.com"
                   type="email"
                   autoCapitalize="none"
                   autoComplete="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   autoCorrect="off"
                   disabled={isLoading}
                   required
@@ -70,9 +129,12 @@ export default function RegisterPage() {
                 <Label htmlFor="password">Mot de passe</Label>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
                   autoCapitalize="none"
                   autoComplete="new-password"
+                  value={formData.password}
+                  onChange={handleChange}
                   disabled={isLoading}
                   required
                 />
@@ -80,11 +142,9 @@ export default function RegisterPage() {
               <div className="grid gap-2">
                 <Label>Type d'utilisateur</Label>
                 <RadioGroup
-                  defaultValue="developer"
-                  value={userType}
-                  onValueChange={setUserType}
-                  className="grid grid-cols-3 gap-4"
-                >
+                  value={formData.role}
+                  onValueChange={handleRoleChange}
+                  className="grid grid-cols-3 gap-4">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="developer" id="developer" />
                     <Label htmlFor="developer">Développeur</Label>
@@ -111,8 +171,7 @@ export default function RegisterPage() {
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                    strokeLinejoin="round">
                     <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                   </svg>
                 )}
@@ -123,11 +182,15 @@ export default function RegisterPage() {
         </div>
         <div className="px-8 text-center text-sm text-muted-foreground">
           En vous inscrivant, vous acceptez nos{" "}
-          <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
+          <Link
+            href="/terms"
+            className="underline underline-offset-4 hover:text-primary">
             Conditions d'utilisation
           </Link>{" "}
           et notre{" "}
-          <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
+          <Link
+            href="/privacy"
+            className="underline underline-offset-4 hover:text-primary">
             Politique de confidentialité
           </Link>
           .
@@ -144,4 +207,3 @@ export default function RegisterPage() {
     </div>
   )
 }
-

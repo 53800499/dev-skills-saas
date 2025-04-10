@@ -38,7 +38,7 @@ interface NavItem {
   submenu?: NavItem[]
 }
 
-export function DashboardNav() {
+export function DevDashboardNav() {
   const pathname = usePathname()
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -66,49 +66,8 @@ export function DashboardNav() {
     },
     {
       title: "Tests",
-      href: "/dashboard/tests",
+      href: "/dashboard/test",
       icon: <Code className="mr-2 h-4 w-4" />,
-      badge: "Nouveau",
-      badgeColor: "bg-blue-500",
-      submenu: [
-        {
-          title: "Tous les tests",
-          href: "/dashboard/tests",
-          icon: <FileText className="mr-2 h-4 w-4" />,
-        },
-        {
-          title: "Créer un test",
-          href: "/dashboard/tests/create",
-          icon: <Zap className="mr-2 h-4 w-4" />,
-        },
-        {
-          title: "Modèles",
-          href: "/dashboard/tests/create",
-          icon: <BookOpen className="mr-2 h-4 w-4" />,
-        },
-      ],
-    },
-    {
-      title: "Candidats",
-      href: "/dashboard/candidates",
-      icon: <Users className="mr-2 h-4 w-4" />,
-      submenu: [
-        {
-          title: "Tous les candidats",
-          href: "/dashboard/candidates",
-          icon: <Users className="mr-2 h-4 w-4" />,
-        },
-        {
-          title: "Inviter",
-          href: "/dashboard/candidates/invite",
-          icon: <MessageSquare className="mr-2 h-4 w-4" />,
-        },
-        {
-          title: "Groupes",
-          href: "/dashboard/candidates/invite",
-          icon: <Briefcase className="mr-2 h-4 w-4" />,
-        },
-      ],
     },
     {
       title: "Résultats",
@@ -160,17 +119,17 @@ export function DashboardNav() {
               key={item.title}
               open={isOpen}
               onOpenChange={() => toggleSubmenu(item.title)}
-              className="w-full">
+              className="w-full"
+            >
               <div className="flex flex-col gap-1">
                 <Link
                   href={item.href}
                   className={cn(
                     buttonVariants({ variant: "ghost" }),
                     "w-full justify-start relative group overflow-hidden",
-                    isActive
-                      ? "bg-muted hover:bg-muted"
-                      : "hover:bg-transparent hover:underline"
-                  )}>
+                    isActive ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline",
+                  )}
+                >
                   <motion.div
                     className="absolute inset-0 bg-primary/10 rounded-md -z-10"
                     initial={{ x: "-100%" }}
@@ -182,23 +141,12 @@ export function DashboardNav() {
                     <span>{item.title}</span>
                   </span>
                   {item.badge && (
-                    <Badge
-                      className={`ml-auto ${item.badgeColor} text-white`}
-                      variant="outline">
+                    <Badge className={`ml-auto ${item.badgeColor} text-white`} variant="outline">
                       {item.badge}
                     </Badge>
                   )}
-                  <CollapsibleTrigger asChild>
-                  
-                  <motion.div
-                    animate={{ rotate: isOpen ? 90 : 0 }}
-                    transition={{ duration: 0.2 }}>
-                    <ChevronRight className="h-4 w-4" />
-                  </motion.div>
-                  </CollapsibleTrigger>
                 </Link>
-
-                {/* <CollapsibleTrigger asChild>
+                <CollapsibleTrigger asChild>
                   <Button
                     className={cn(
                       buttonVariants({ variant: "ghost" }),
@@ -211,14 +159,15 @@ export function DashboardNav() {
                       <ChevronRight className="h-4 w-4" />
                     </motion.div>
                   </Button>
-                </CollapsibleTrigger> */}
+                </CollapsibleTrigger>
               </div>
               <CollapsibleContent className="pl-6 pt-1">
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}>
+                  transition={{ duration: 0.2 }}
+                >
                   {item.submenu.map((subitem) => (
                     <Link
                       key={subitem.title}
@@ -228,8 +177,9 @@ export function DashboardNav() {
                         "justify-start w-full mb-1",
                         pathname === subitem.href
                           ? "bg-muted hover:bg-muted font-medium"
-                          : "hover:bg-transparent hover:underline"
-                      )}>
+                          : "hover:bg-transparent hover:underline",
+                      )}
+                    >
                       {subitem.icon}
                       <span>{subitem.title}</span>
                     </Link>
@@ -237,7 +187,7 @@ export function DashboardNav() {
                 </motion.div>
               </CollapsibleContent>
             </Collapsible>
-          );
+          )
         }
 
         return (

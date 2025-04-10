@@ -20,15 +20,18 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={inter.className}>
+        <AuthProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Toaster />
         </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
 
 
 
 import './globals.css'
+import { AuthProvider } from "@/context/auth-context"
