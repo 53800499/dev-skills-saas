@@ -29,6 +29,9 @@ import {
   X,
   ArrowDown,
 } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
+import { UserAccountNav } from "@/components/dashboard/user-account-nav"
+
 
 export default function Home() {
   const [mounted, setMounted] = useState(false)
@@ -43,6 +46,7 @@ export default function Home() {
   const pricingRef = useRef<HTMLElement>(null)
   const faqRef = useRef<HTMLElement>(null)
   const ctaRef = useRef<HTMLElement>(null)
+  const { user, isAuthenticated, loading } = useAuth();
 
   const { scrollYProgress } = useScroll()
   const y = useTransform(scrollYProgress, [0, 0.5], [0, -50])
@@ -158,25 +162,34 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Auth Buttons */}
-          <motion.div
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="hidden md:flex items-center gap-4"
-          >
-            <Link href="/login">
-              <Button variant="ghost" className="hover:bg-primary/10 transition-all duration-300">
-                Connexion
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button className="relative overflow-hidden group">
-                <span className="relative z-10">S'inscrire</span>
-                <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              </Button>
-            </Link>
-          </motion.div>
+          {!user ? (
+            // Auth Buttons
+            <motion.div
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="hidden md:flex items-center gap-4"
+            >
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  className="hover:bg-primary/10 transition-all duration-300"
+                >
+                  Connexion
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button className="relative overflow-hidden group">
+                  <span className="relative z-10">S'inscrire</span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </Button>
+              </Link>
+            </motion.div>
+          ) : (
+            <UserAccountNav />
+          )}
+
+          
         </div>
       </header>
 
@@ -209,7 +222,7 @@ export default function Home() {
                 </button>
               ))}
               <div className="h-px bg-border my-2" />
-              <div className="flex gap-2 pt-2">
+              {!user ? (<div className="flex gap-2 pt-2">
                 <Link href="/login" className="flex-1">
                   <Button variant="outline" className="w-full">
                     Connexion
@@ -218,7 +231,8 @@ export default function Home() {
                 <Link href="/register" className="flex-1">
                   <Button className="w-full">S'inscrire</Button>
                 </Link>
-              </div>
+              </div>) : (<UserAccountNav />)}
+              
             </div>
           </motion.div>
         )}
