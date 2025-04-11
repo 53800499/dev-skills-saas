@@ -38,7 +38,7 @@ export interface AuthResponse {
 }
 
 // Configuration
-const API_URL = "http://localhost:3006/api";
+const API_URL = "https://evalution-des-developpeur-back-end.onrender.com/api";
 
 // Instance axios
 const api = axios.create({
