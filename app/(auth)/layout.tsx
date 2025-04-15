@@ -21,7 +21,7 @@ export default function AuthLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center">
         <Skeleton className="h-10 w-[250px]" />
       </div>
     );

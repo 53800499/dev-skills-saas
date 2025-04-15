@@ -16,7 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton"
     children: React.ReactNode
     }) {
       const router = useRouter();
-     const { user, isAuthenticated, loading } = useAuth();
+    const { user, isAuthenticated, loading } = useAuth();
+    console.log(user);
     useEffect(() => {
       if (!loading && !isAuthenticated) {
         router.push('/login');
@@ -41,7 +42,6 @@ import { Skeleton } from "@/components/ui/skeleton"
   }
 
 
-    const [role, setRole] = useState("developer");
 
     return (
       <div className="flex min-h-screen flex-col">
@@ -53,8 +53,9 @@ import { Skeleton } from "@/components/ui/skeleton"
         </header>
         <div className="container grid flex-1 gap-12 md:grid-cols-[200px_1fr]">
           <aside className="hidden w-[200px] flex-col md:flex">
-            {role === "developer" && <DevDashboardNav />}
-            {role === "admin" && <DashboardNav />}
+            {user?.table === "developer" && <DevDashboardNav />}
+            {user?.table === "admin" && <DashboardNav />}
+            {user?.table === "recruiter" && <DashboardNav />}
           </aside>
           <main className="flex w-full flex-1 flex-col overflow-hidden">
             {children}

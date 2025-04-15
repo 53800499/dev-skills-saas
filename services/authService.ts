@@ -9,6 +9,7 @@ export interface User {
   name?: string;
   role?: string;
   avatar?: string;
+  table?: string;
 }
 
 export interface LoginCredentials {
@@ -28,6 +29,7 @@ export interface AuthResponse {
   data?: {
     user: User;
     token: string;
+    table?: string;
   };
   message?: string;
   error?: {
@@ -38,7 +40,8 @@ export interface AuthResponse {
 }
 
 // Configuration
-const API_URL = "https://evalution-des-developpeur-back-end.onrender.com/api";
+//const API_URL = "https://evalution-des-developpeur-back-end.onrender.com/api";
+const API_URL = "http://localhost:3003/api/";
 
 // Instance axios
 const api = axios.create({
@@ -150,9 +153,8 @@ class AuthService {
 
       const response = await api.post("/users/login", loginData);
       console.log("Réponse du serveur:", response.data);
-
       // Adaptation de la réponse du serveur
-      const { token, data: userData, message } = response.data;
+      const { token, data: userData, message, table } = response.data;
 
       if (token && userData) {
         // Transformation des données utilisateur pour correspondre à notre interface User
@@ -162,6 +164,7 @@ class AuthService {
           name: userData.name,
           role: userData.role,
           avatar: userData.avatar || undefined,
+          table: table || userData.table
         };
 
         setToken(token);
@@ -171,7 +174,8 @@ class AuthService {
           success: true,
           data: { 
             user,
-            token 
+            token,
+            table
           },
           message // On peut aussi inclure le message du serveur
         };

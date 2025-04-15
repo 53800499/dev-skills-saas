@@ -1,60 +1,60 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/context/auth-context"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { useState } from "react"
+
+const formSchema = z.object({
+  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  email: z.string().email("Email invalide"),
+  password: z.string()
+    .min(6, "Le mot de passe doit contenir au moins 6 caractères")
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
+    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+    .regex(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
+  role: z.enum(["developer", "recruiter", "admin"]),
+})
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "developer",
-  })
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
   const { register } = useAuth()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "developer",
+    },
+  })
 
-  const handleRoleChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      role: value,
-    }))
-  }
-
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
 
     try {
-      console.log(formData)
-      // Validation basique
-      if (!formData.email || !formData.password || !formData.name) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Veuillez remplir tous les champs obligatoires",
-        })
-        return
-      }
-
-      const response = await register(formData)
+      const response = await register(values)
 
       if (response.success) {
         toast({
@@ -92,94 +92,117 @@ export default function RegisterPage() {
             Inscrivez-vous pour accéder à la plateforme
           </p>
         </div>
-        <div className="grid gap-6">
-          <form onSubmit={onSubmit}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nom complet</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="John Doe"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  value={formData.name}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  placeholder="nom@exemple.com"
-                  type="email"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  autoCorrect="off"
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoCapitalize="none"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Type d'utilisateur</Label>
-                <RadioGroup
-                  value={formData.role}
-                  onValueChange={handleRoleChange}
-                  className="grid grid-cols-3 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="developer" id="developer" />
-                    <Label htmlFor="developer">Développeur</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="recruiter" id="recruiter" />
-                    <Label htmlFor="recruiter">Recruteur</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="admin" id="admin" />
-                    <Label htmlFor="admin">Admin</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <Button disabled={isLoading}>
-                {isLoading && (
-                  <svg
-                    className="mr-2 h-4 w-4 animate-spin"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round">
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
-                )}
-                S'inscrire
-              </Button>
-            </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nom complet</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="John Doe"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="nom@exemple.com"
+                      type="email"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      autoCorrect="off"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mot de passe</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoCapitalize="none"
+                      autoComplete="new-password"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type d'utilisateur</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="grid grid-cols-3 gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="developer" id="developer" />
+                        <Label htmlFor="developer">Développeur</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="recruiter" id="recruiter" />
+                        <Label htmlFor="recruiter">Recruteur</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="admin" id="admin" />
+                        <Label htmlFor="admin">Admin</Label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading && (
+                <svg
+                  className="mr-2 h-4 w-4 animate-spin"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+              )}
+              S'inscrire
+            </Button>
           </form>
-        </div>
+        </Form>
         <div className="px-8 text-center text-sm text-muted-foreground">
           En vous inscrivant, vous acceptez nos{" "}
           <Link
